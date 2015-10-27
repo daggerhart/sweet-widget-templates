@@ -11,7 +11,7 @@
  * $widget_classname - Widget object defined class name
  */
 ?>
-<aside id="<?php echo esc_attr( $widget_args['widget_id'] ); ?>" class="widget <?php echo esc_attr(); ?>">
+<aside id="<?php echo esc_attr( $widget_args['widget_id'] ); ?>" class="widget <?php echo esc_attr( $widget_classname ); ?>">
 	<?php if ( $widget_title ) :?>here
 		<h2 class="widget-title"><?php echo $widget_title; ?></h2>
 	<?php endif; ?>
