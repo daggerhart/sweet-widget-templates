@@ -2,13 +2,13 @@
 /**
  * Available variables -- null if missing
  *
- * $widget_title     - Title for widget
- * $widget_content   - Content for widget
- * $widget_instance  - $instance array of the widget
- * $widget_object    - WP_Widget object
- * $widget_args      - Sidebar parameters: (before_widget, before_title, etc...)
- * $widget_id        - Unique id for the widget based on id_base and number
- * $widget_classname - Widget object defined class name
+ * - $widget_title     | Title for widget
+ * - $widget_content   | Content for widget
+ * - $widget_instance  | $instance array of the widget
+ * - $widget_object    | WP_Widget object
+ * - $widget_args      | Sidebar parameters: (before_widget, before_title, etc...)
+ * - $widget_id        | Unique id for the widget based on id_base and number
+ * - $widget_classname | Widget object defined class name
  * 
  * Widget template hierarchy
  *
