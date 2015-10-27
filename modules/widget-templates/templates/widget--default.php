@@ -9,6 +9,14 @@
  * $widget_args - Sidebar parameters: (before_widget, before_title, etc...)
  * $widget_id - Unique id for the widget based on id_base and number
  * $widget_classname - Widget object defined class name
+ * 
+ * Widget template hierarchy
+ *
+ * - {custom-template-name}.php    | If a widget has a specified template name in the Admin Dashboard, that template name takes priority.
+ * - {sidebar-id}--{widget-id}.php | Specific widget in specific sidebar
+ * - {sidebar-id}.php              | Any widget in specific sidebar
+ * - {widget-id}.php               | Specific widget in any sidebar
+ * - widget--default.php           | Default template for all widgets in all sidebars
  */
 ?>
 <aside id="<?php echo esc_attr( $widget_args['widget_id'] ); ?>" class="widget <?php echo esc_attr( $widget_classname ); ?>">
