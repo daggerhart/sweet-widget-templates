@@ -69,7 +69,14 @@ class Sweet_Widgets_Templates {
 					name="<?php echo $widget->get_field_name( 'sweet_template' ); ?>"
 					value="<?php echo $sweet_template; ?>">
 			</p>
-			<p class="help"><?php _e( 'Provide a file name relative to the theme path, similar to get_template_part().  Example: <code>widgets/my-template</code> to load a file found at <code>[your-theme]/widgets/my-template.php</code>.' ); ?></p>
+			<p class="help">
+				<?php 
+					printf( __( 'Provide a file name, without extension, that exists in the %s folder within your theme.  Example: %s to load a file found at %s.' ),
+						"<code>{$this->folder}</code>",
+						'<code>my-template</code>',
+						"<code>[your-theme]/{$this->folder}/my-template.php</code>"
+					); ?>
+			</p>
 		</div>
 		<?php
 	}
