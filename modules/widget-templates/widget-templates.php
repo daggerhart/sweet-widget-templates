@@ -3,8 +3,8 @@
  * Class Sweet_Widgets_Templates
  *
  * Filters:
- *      - sweet_widget_templates-suggestions
- *      - sweet_widget_templates-folder
+ *      - sweet_widgets_templates-suggestions
+ *      - sweet_widgets_templates-folder
  */
 class Sweet_Widgets_Templates {
 
@@ -18,7 +18,7 @@ class Sweet_Widgets_Templates {
 	 */
 	static function register(){
 		$plugin = new self();
-		$plugin->folder = apply_filters( 'sweet_widget_templates-folder', $plugin->folder );
+		$plugin->folder = apply_filters( 'sweet_widgets_templates-folder', $plugin->folder );
 
 		add_action( 'in_widget_form', array( $plugin, 'in_widget_form' ), 20, 3 );
 		add_filter( 'widget_update_callback', array( $plugin, 'widget_update_callback' ), 20 , 4 );
@@ -35,47 +35,29 @@ class Sweet_Widgets_Templates {
 	 * @param $instance
 	 */
 	function in_widget_form( &$widget, &$return, $instance ){
-		$sweet_template_enabled = isset( $instance['sweet_template_enabled'] ) ? esc_attr( $instance['sweet_template_enabled'] ) : 0;
-		$sweet_template = isset( $instance['sweet_template'] ) ? esc_attr( $instance['sweet_template'] ) : '';
+		$sweet_widgets_template = isset( $instance['sweet_widgets_template'] ) ? esc_attr( $instance['sweet_widgets_template'] ) : '';
 		?>
-
-		<h4>Sweet Widget Templates</h4>
 		<div class="sweet-widget-templates">
 			<p>
-				<label for="<?php echo $widget->get_field_id( 'sweet_template_enabled' ); ?>">
-					<input
-						type="hidden"
-						name="<?php echo $widget->get_field_name( 'sweet_template_enabled' ); ?>"
-						value="0">
-					<input
-						type="checkbox"
-						id="<?php echo $widget->get_field_id( 'sweet_template_enabled' ); ?>"
-						name="<?php echo $widget->get_field_name( 'sweet_template_enabled' ); ?>"
-						<?php checked( $sweet_template_enabled, 1 ); ?>
-						value="1">
-					<strong><?php _e( 'Override template' ); ?></strong>
+				<label for="<?php echo $widget->get_field_id( 'sweet_widgets_template' ); ?>">
+					<strong><?php _e( 'Sweet Widget Template' ); ?></strong>
 				</label>
-			</p>
-			<p class="help"><?php _e( '' ); ?></p>
-
-			<p>
-				<label for="<?php echo $widget->get_field_id( 'sweet_template' ); ?>">
-					<strong><?php _e( 'Template name' ); ?></strong>
-				</label>
-				<input
-					type="text"
-					id="<?php echo $widget->get_field_id( 'sweet_template' ); ?>"
+				<select
+					id="<?php echo $widget->get_field_id( 'sweet_widgets_template' ); ?>"
 					class="widefat"
-					name="<?php echo $widget->get_field_name( 'sweet_template' ); ?>"
-					value="<?php echo $sweet_template; ?>">
+					name="<?php echo $widget->get_field_name( 'sweet_widgets_template' ); ?>">
+					<?php foreach( $this->get_widget_template_options() as $value => $text ) : ?>
+						<option 
+							value="<?php echo esc_attr( $value ); ?>" 
+							<?php selected( $value, $sweet_widgets_template ); ?>>
+							<?php echo esc_attr( $text ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+				<?php $this->get_widget_templates(); ?>
 			</p>
 			<p class="help">
-				<?php 
-					printf( __( 'Provide a file name, without extension, that exists in the %s folder within your theme.  Example: %s to load a file found at %s.' ),
-						"<code>{$this->folder}</code>",
-						'<code>my-template</code>',
-						"<code>[your-theme]/{$this->folder}/my-template.php</code>"
-					); ?>
+				<?php _e( 'Select the preferred template for this widget. If "Default" is selected, the widget will use the next available template in the hierarchy.' ); ?>
 			</p>
 		</div>
 		<?php
@@ -94,8 +76,7 @@ class Sweet_Widgets_Templates {
 	 * @return mixed
 	 */
 	function widget_update_callback( $instance, $new_instance, $old_instance, $widget ) {
-		$instance['sweet_template_enabled'] = isset( $new_instance['sweet_template_enabled'] ) ? $new_instance['sweet_template_enabled'] : 0;
-		$instance['sweet_template'] = isset( $new_instance['sweet_template'] ) ? $new_instance['sweet_template'] : '';
+		$instance['sweet_widgets_template'] = isset( $new_instance['sweet_widgets_template'] ) ? $new_instance['sweet_widgets_template'] : '';
 
 		return $instance;
 	}
@@ -160,10 +141,8 @@ class Sweet_Widgets_Templates {
 		$templates = array();
 
 		// if the widget has specified a template, look for it first.
-		if ( isset( $instance['sweet_template_enabled'], $instance['sweet_template'] ) &&
-		     $instance['sweet_template_enabled'] == 1 )
-		{
-			$templates[] = esc_attr( $instance['sweet_template'] );
+		if ( isset( $instance['sweet_widgets_template'] ) && ! empty( $instance['sweet_widgets_template'] ) ) {
+			$templates[] = esc_attr( $instance['sweet_widgets_template'] );
 		}
 
 		// common suggestions
@@ -178,7 +157,7 @@ class Sweet_Widgets_Templates {
 		}
 
 		// allow for alterations
-		$templates = apply_filters( 'sweet_widget_templates-suggestions', $templates, $instance, $widget, $args );
+		$templates = apply_filters( 'sweet_widgets_templates-suggestions', $templates, $instance, $widget, $args );
 
 		return $templates;
 	}
@@ -266,6 +245,39 @@ class Sweet_Widgets_Templates {
 		if ( $widget->is_preview() ) {
 			wp_suspend_cache_addition( $was_cache_addition_suspended );
 		}
+	}
+
+	/**
+	 * Util: Get an array of all templates in the current theme's {folder}.
+	 *
+	 * @return array
+	 */
+	function get_widget_templates(){
+		$templates = array();
+		$path = get_stylesheet_directory() . '/' . $this->folder . '/*.php';
+		foreach( glob( $path ) as $file ) {
+			$templates[] = $file;
+		}
+		return $templates;
+	}
+
+	/**
+	 * Util: Create an array of options from the exist widget templates
+	 *
+	 * @return array
+	 */
+	function get_widget_template_options(){
+		$options = array(
+			'' => __( '- Default -' )
+		);
+		$templates = $this->get_widget_templates();
+
+		foreach ( $templates as $file ){
+			$name = basename( $file );
+			$options[ $name ] = $name;
+		}
+
+		return $options;
 	}
 }
 
