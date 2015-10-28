@@ -31,6 +31,7 @@ class Sweet_Widgets {
 			array(
 				'enabled_modules' => array(
 					'widget-templates' => 1,
+					'admin-ui' => 1,
 				),
 			),
 			$option_values
