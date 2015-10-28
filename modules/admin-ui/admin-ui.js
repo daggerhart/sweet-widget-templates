@@ -1,5 +1,8 @@
 (function($){
-	
+
+	/**
+	 * Overlay creates a backdrop and supports the CSS in appearing like a modal
+	 */
 	var Sweet_Widgets_Admin_UI_Overlay = {
 		overlay: null,
 		widget: null,
@@ -80,7 +83,7 @@
 			$('.widgets-sortables' ).removeClass( 'sweet-widgets-breakout' );
 		}
 	};
-
+	
 	$(document).ready(function() {
 		Sweet_Widgets_Admin_UI_Overlay.init();
 	});

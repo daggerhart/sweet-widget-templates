@@ -134,7 +134,6 @@ class Sweet_Widgets_Templates {
 			// set instance to false to short circuit the normal process
 			$instance = false;
 		}
-		else { echo "TEMPLATE NOT FOUND"; }
 
 		return $instance;
 	}

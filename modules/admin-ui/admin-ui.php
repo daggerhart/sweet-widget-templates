@@ -12,7 +12,10 @@ class Sweet_Widgets_Admin_UI {
 
 		add_action( 'admin_enqueue_scripts', array( $plugin, 'admin_enqueue_scripts' ) );
 	}
-	
+
+	/**
+	 * Hook: admin_enqueue_scripts
+	 */
 	function admin_enqueue_scripts(){
 		if ( get_current_screen()->id == 'widgets' ){
 			wp_enqueue_script( 'sweet-widgets-admin-ui', plugins_url( 'admin-ui.js', __FILE__ ), array( 'jquery', 'admin-widgets' ), $this->version );

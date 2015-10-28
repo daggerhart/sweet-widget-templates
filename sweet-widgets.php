@@ -32,6 +32,7 @@ class Sweet_Widgets {
 				'enabled_modules' => array(
 					'widget-templates' => 1,
 					'admin-ui' => 1,
+					'text-editor' => 1,
 				),
 			),
 			$option_values
@@ -76,3 +77,4 @@ class Sweet_Widgets {
 }
 
 Sweet_Widgets::register();
+
