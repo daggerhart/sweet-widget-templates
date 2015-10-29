@@ -22,7 +22,7 @@ Description | Pattern | Example
 Specific widget in specific sidebar. | `{sidebar-id}--{widget-id}` | `sidebar-1--text-6.php`
 Any widget in a specific sidebar. | `{sidebar-id}--default` | `sidebar-1--default.php`
 Specific widget in any sidebar. | `{widget-id}` | `text-6.php`
-Any widget in any sidebar. | `widget--default` | `sidebar-1--text-6.php`
+Any widget in any sidebar. | `widget--default` | `widget--default.php`
 
 ### Hooks
 
