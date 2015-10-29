@@ -3,8 +3,9 @@
  * Class Sweet_Widgets_Templates
  *
  * Filters:
- *      - sweet_widgets_templates-suggestions
  *      - sweet_widgets_templates-folder
+ *      - sweet_widgets_templates-replacements
+ *      - sweet_widgets_templates-suggestions
  */
 class Sweet_Widgets_Templates {
 
@@ -29,6 +30,8 @@ class Sweet_Widgets_Templates {
 	 * Allow user to specify a template per widget
 	 *
 	 * Action: in_widget_form
+	 *
+	 * @see WP_Widget::form_callback()
 	 *
 	 * @param $widget
 	 * @param $return
@@ -58,6 +61,7 @@ class Sweet_Widgets_Templates {
 			</p>
 			<p class="help">
 				<?php _e( 'Select the preferred template for this widget. If "Default" is selected, the widget will use the next available template in the hierarchy.' ); ?>
+				<?php printf( __( "Widget ID: %s" ), $widget->id ); ?>
 			</p>
 		</div>
 		<?php
@@ -67,6 +71,8 @@ class Sweet_Widgets_Templates {
 	 * Save our custom widget data
 	 *
 	 * Filter: widget_update_callback
+	 *
+	 * @see WP_Widget::update_callback()
 	 *
 	 * @param $instance
 	 * @param $new_instance
@@ -95,25 +101,25 @@ class Sweet_Widgets_Templates {
 	 * @return mixed
 	 */
 	function widget_display_callback( $instance, $widget, $args ){
-		// clean up any previous widget data stored in the query_vars
-		$this->reset_query_vars();
-
 		// make a list of template suggestions
-		$templates = $this->get_template_suggestions( $instance, $widget, $args );
+		$suggestions = $this->get_template_suggestions( $instance, $widget, $args );
 
 		// look for suggested templates, and handle the first one found
-		$found = locate_template( $templates );
+		$template = locate_template( $suggestions );
 
-		if ( $found ){
+		if ( $template ){
 			// We have a custom template, now we need to setup some data for
 			// the template to use, then load it.
 			$this->setup_widget_template_data( $instance, $widget, $args );
 
 			// execute the widget
-			load_template( $found, false );
+			load_template( $template, false );
 
 			// set instance to false to short circuit the normal process
 			$instance = false;
+
+			// clean up any previous widget data stored in the query_vars
+			$this->reset_query_vars();
 		}
 
 		return $instance;
@@ -122,15 +128,6 @@ class Sweet_Widgets_Templates {
 	/**
 	 * Util: Build an array of possible template suggestions
 	 *
-	 * - {sidebar-id}--{widget-id}.php
-	 *      Specific widget in specific sidebar
-	 *
-	 * - {sidebar-id}.php
-	 *      Any widget in specific sidebar
-	 *
-	 * - {widget-id}.php
-	 *      Specific widget in any sidebar
-	 *
 	 * @param $instance
 	 * @param $widget
 	 * @param $args
@@ -138,28 +135,35 @@ class Sweet_Widgets_Templates {
 	 * @return array
 	 */
 	function get_template_suggestions( $instance, $widget, $args ){
-		$templates = array();
+		$suggestions = array();
 
 		// if the widget has specified a template, look for it first.
 		if ( isset( $instance['sweet_widgets_template'] ) && ! empty( $instance['sweet_widgets_template'] ) ) {
-			$templates[] = esc_attr( $instance['sweet_widgets_template'] );
+			$suggestions[] = esc_attr( $instance['sweet_widgets_template'] );
 		}
 
-		// common suggestions
-		$templates[] = "{$args['id']}--{$widget->id}";
-		$templates[] = "{$args['id']}--default";
-		$templates[] = "{$widget->id}";
-		$templates[] = "widget--default";
+		$replacements = array(
+			'{sidebar-id}' => $args['id'],
+			'{widget-id}' => $widget->id,
+		);
+
+		// allow other sources to alter the available replacement pairs
+		$replacements = apply_filters( 'sweet_widgets_templates-replacements', $replacements, $instance, $widget, $args );
+
+		$suggestions[] = '{sidebar-id}--{widget-id}';
+		$suggestions[] = '{sidebar-id}--default';
+		$suggestions[] = '{widget-id}';
+		$suggestions[] = 'widget--default';
+
+		// allow other sources to alter the suggestion patterns
+		$suggestions = apply_filters( 'sweet_widgets_templates-suggestions', $suggestions, $instance, $widget, $args );
 
 		// prepare templates
-		foreach( $templates as &$template ){
-			$template = "{$this->folder}/{$template}.php";
+		foreach( $suggestions as $i => &$suggestion ){
+			$suggestion = $this->folder . '/' . strtr( $suggestion, $replacements ) . '.php';
 		}
 
-		// allow for alterations
-		$templates = apply_filters( 'sweet_widgets_templates-suggestions', $templates, $instance, $widget, $args );
-
-		return $templates;
+		return $suggestions;
 	}
 
 	/**
@@ -171,10 +175,8 @@ class Sweet_Widgets_Templates {
 	 * @param $args
 	 */
 	function setup_widget_template_data( $instance, $widget, $args ){
-		$original_args = $args;
-
 		// alter the parameters
-		$args = array_replace( $args, array(
+		$temp_args = array_replace( $args, array(
 			'before_widget' => '',
 			'before_title' => '',
 			'after_title' => '<!--sweet-widget-templates-break-->',
@@ -184,7 +186,7 @@ class Sweet_Widgets_Templates {
 		// execute the widget and capture its output into separate 'title'
 		// and 'content' data
 		ob_start();
-			$this->override_widget_display( $instance, $widget, $args );
+			$this->override_widget_display( $instance, $widget, $temp_args );
 		$document = ob_get_clean();
 		$document = explode( '<!--sweet-widget-templates-break-->', $document );
 
@@ -205,7 +207,7 @@ class Sweet_Widgets_Templates {
 		set_query_var( 'widget_content', $widget_content );
 		set_query_var( 'widget_instance', $instance );
 		set_query_var( 'widget_object', $widget );
-		set_query_var( 'widget_args', $original_args );
+		set_query_var( 'widget_args', $args );
 		set_query_var( 'widget_id', $widget->id );
 		set_query_var( 'widget_classname', $widget->widget_options['classname'] );
 	}
