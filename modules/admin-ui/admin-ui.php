@@ -2,7 +2,7 @@
 
 class Sweet_Widgets_Admin_UI {
 
-	public $version = '1.0.0';
+	public $version = '0.0.1';
 	
 	/**
 	 * Instantiate and hook plugin into WordPress

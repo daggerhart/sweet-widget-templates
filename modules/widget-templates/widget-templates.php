@@ -9,10 +9,10 @@
  */
 class Sweet_Widgets_Templates {
 
+	public $version = '0.0.1';
+
 	// subdirectory in theme where widget templates are kept
 	public $folder = 'widgets';
-
-	public $cache = array();
 
 	/**
 	 * Instantiate and hook plugin into WordPress

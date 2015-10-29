@@ -2,7 +2,7 @@
 
 class Sweet_Widgets_Text_Editor {
 
-	public $version = '1.0.0';
+	public $version = '0.0.1';
 	
 	/**
 	 * Instantiate and hook plugin into WordPress
@@ -21,8 +21,7 @@ class Sweet_Widgets_Text_Editor {
 	function admin_enqueue_scripts(){
 		if ( get_current_screen()->id == 'widgets' ){
 			wp_enqueue_script( 'sweet-widgets-text-editor', plugins_url( 'text-editor.js', __FILE__ ), array( 'jquery', 'admin-widgets' ), $this->version, true );
-			wp_enqueue_style( 'sweet-widgets-text-editor', plugins_url( 'text-editor.css', __FILE__ ), array(), $this->version );
-			
+
 			// only modify sidebar params when on the widget edit page
 			add_filter( 'dynamic_sidebar_params', array( $this, 'dynamic_sidebar_params' ), 999 );
 		}
