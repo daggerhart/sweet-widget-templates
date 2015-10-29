@@ -40,21 +40,23 @@
 		 * @link http://www.tinymce.com/wiki.php/api4:event.tinymce.Editor.blur
 		 */
 		firstLoadEditors: function(){
+            var _this = this;
+            this.hideDefaultTextarea();
+
 			setTimeout( function(){
-				$( '.sweet-widgets-text-editor' ).each( function() {
-					// remove the editors
-					var editor = tinymce.get( this.id );
-					tinymce.remove( editor );
-	
-					tinyMCEPreInit.mceInit[ this.id ].setup = function(editor){
-						// subscribe to the blur event for saving the document
-						editor.on( 'blur', function ( e ) {
-							editor.save();
-						} );
-					};
-	
-					tinymce.init( tinyMCEPreInit.mceInit[ this.id ] );
-				});
+                $( '.sweet-widgets-text-editor' ).each( function() {
+                    tinyMCEPreInit.mceInit[this.id].setup = function ( ed ) {
+                        // subscribe to the blur event for saving the document
+                        ed.on( 'blur', function ( e ) {
+                            console.log('blur');
+                            if ( ! ed.isHidden() ) {
+                                console.log('blur save');
+                                ed.save();
+                            }
+                        } );
+                    };
+                });
+
 			}, 1 );
 		},
 
@@ -62,17 +64,29 @@
 		 * Loop through editors, save content, then reload them.
 		 */
 		reloadEditors: function() {
+            this.hideDefaultTextarea();
+
+            console.log('reload');
+
 			$( '.sweet-widgets-text-editor' ).each( function() {
 				var editor = tinymce.get( this.id );
 
 				if ( ! editor.isHidden() ) {
+                    console.log('reload save');
 					editor.save();
 				}
-				
+
 				tinymce.remove( editor );
 				tinymce.init( tinyMCEPreInit.mceInit[ this.id ] );
 			});
 		},
+
+        /**
+         * Hide the default textarea to avoid confusion.
+         */
+        hideDefaultTextarea: function(){
+            //$('.widget-name-Text p > textarea.widefat').hide();
+        },
 
 		/**
 		 * Util: convert a url of query parameters into an object
