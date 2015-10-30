@@ -11,7 +11,8 @@ class Sweet_Widgets_Text_Editor {
 		$plugin = new self();
 
 		add_action( 'admin_enqueue_scripts', array( $plugin, 'admin_enqueue_scripts' ) );
-		add_action( 'in_widget_form', array( $plugin, 'in_widget_form' ), 20, 3 );
+
+		add_filter( 'widget_form_callback', array( $plugin, 'widget_form_callback' ), 999 , 2 );
 		add_filter( 'widget_update_callback', array( $plugin, 'widget_update_callback' ), 999 , 4 );
 	}
 
@@ -21,52 +22,59 @@ class Sweet_Widgets_Text_Editor {
 	function admin_enqueue_scripts(){
 		if ( get_current_screen()->id == 'widgets' ){
 			wp_enqueue_script( 'sweet-widgets-text-editor', plugins_url( 'text-editor.js', __FILE__ ), array( 'jquery', 'admin-widgets' ), $this->version, true );
-
-			// only modify sidebar params when on the widget edit page
-			add_filter( 'dynamic_sidebar_params', array( $this, 'dynamic_sidebar_params' ), 999 );
 		}
 	}
 
 	/**
-	 * Override some admin widget params to inject our own classes for styling
-	 * 
-	 * @param $params
+	 * Short-circuit the WP_Widget_Text form so we can inject our editor
+	 *
+	 * @see WP_Widget::form_callback
+	 *
+	 * @param $instance
+	 * @param $widget
 	 *
 	 * @return mixed
 	 */
-	function dynamic_sidebar_params( $params ){
-		// double-check we're on the admin page
-		if ( $params[0]['before_title'] == '%BEG_OF_TITLE%' ) {
-			$old = "class='widget'";
-			$new = "class='widget widget-name-{$params[0]['widget_name']}'";
-			$params[0]['before_widget'] = str_replace( $old, $new, $params[0]['before_widget'] );
-		}
-		return $params;
-	}
+	function widget_form_callback( $instance, $widget ){
+		if ( is_a( $widget, 'WP_Widget_Text' ) && false !== $instance ) {
 
-	/**
-	 * Allow user to specify a template per widget
-	 *
-	 * Action: in_widget_form
-	 * @link  https://codex.wordpress.org/Function_Reference/wp_editor
-	 * 
-	 * @param $widget
-	 * @param $return
-	 * @param $instance
-	 */
-	function in_widget_form( &$widget, &$return, $instance ){
-		if ( is_a( $widget, 'WP_Widget_Text' ) ){
-			wp_editor( $instance['text'], $this->make_editor_id( $widget ), array(
-				'editor_class' => 'sweet-widgets-text-editor',
-				'editor_height' => '320px',
-			) );
+			add_filter( 'wp_default_editor', function () {
+				return 'tinymce';
+			});
+
+			// we need $return for the in_widget_form action
+			$return = null;
+			ob_start();
+				$return = $widget->form( $instance );
+			$form = ob_get_clean();
+
+			$top = explode( '<textarea', $form );
+			$bottom = explode( '/textarea>', $top[1] );
+			$top = $top[0];
+			$bottom = $bottom[1];
+
+			ob_start()
+				?><input type="hidden" name="<?php echo $widget->get_field_name('text'); ?>" value=""><?php
+				wp_editor( stripslashes( $instance['text'] ), $this->make_editor_id( $widget ), array(
+					'editor_class' => 'sweet-widgets-text-editor',
+					'editor_height' => '320px',
+				) );
+			$editor = ob_get_clean();
+
+			echo $top.$editor.$bottom;
+
+			do_action_ref_array( 'in_widget_form', array( &$widget, &$return, $instance ) );
+			$instance = false;
 		}
+		return $instance;
 	}
 
 	/**
 	 * Save our custom widget data
 	 *
 	 * Filter: widget_update_callback
+	 *
+	 * @see WP_Widget::update_callback
 	 *
 	 * @param $instance
 	 * @param $new_instance
@@ -78,7 +86,14 @@ class Sweet_Widgets_Text_Editor {
 	function widget_update_callback( $instance, $new_instance, $old_instance, $widget ) {
 		if ( is_a( $widget, 'WP_Widget_Text' ) ){
 			if ( isset( $_POST[ $this->make_editor_id( $widget ) ] ) ){
-				$instance['text'] = wp_kses_post( $_POST[ $this->make_editor_id( $widget ) ] );
+				$text = $_POST[ $this->make_editor_id( $widget ) ];
+
+				if ( current_user_can('unfiltered_html') ){
+					$instance['text'] =  $text;
+				}
+				else {
+					$instance['text'] = stripslashes( wp_filter_post_kses( addslashes( $text ) ) ); // wp_filter_post_kses() expects slashed
+				}
 			}
 		}
 		

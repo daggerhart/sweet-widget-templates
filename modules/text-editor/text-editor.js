@@ -1,8 +1,11 @@
 (function($){
 
 	/**
-	 * TinyMCE on widget pages takes a bit of work
-	 * 
+	 * TinyMCE on widget pages takes a bit of work.
+     * We have to track save button clicks, resulting save ajax calls, and
+     * re-sorts (drag and drop), as well as repair quicktag toolbars on every
+     * reload.
+	 *
 	 * @link https://core.trac.wordpress.org/ticket/19173
 	 */
 	var Sweet_Widgets_Text_Editor = {
@@ -15,77 +18,111 @@
 		 */
 		bindEvents: function(){
 			var _this = this;
-			
-			// reload edtiors after sorting
+
+            // before widget saves, save editor content to the textarea
+            $('input[id^=widget-text-].widget-control-save' ).on('click', function(event){
+                var editor_id = $( event.target ).closest( '.widget' ).find( 'textarea.wp-editor-area' ).attr('id');
+
+                _this.saveEditor( editor_id );
+                _this.reloadEditor( editor_id );
+            });
+
+            // watch for ajax call so we can reload editors after saving
+            $( document ).ajaxComplete( function( event, xhr, settings ) {
+                var data = _this.decodeUriParams( settings.data );
+                if ( data && data.action && data.action == 'save-widget' && data.id_base == 'text' ) {
+                    var editor_id = _this.makeEditorId( data );
+
+                    _this.reloadEditor( editor_id );
+                }
+            });
+
+			// reload editor after sorting
 			$( '.widgets-sortables' ).on( 'sortstop', function( event, obj ) {
-				_this.reloadEditors();
-			} );
+                var $widget = $( obj.item[0] );
+                var id_base = $widget.find('input[name=id_base]' ).val();
 
-			// watch for an ajax call so we can reload editors after saving a text widget
-			$( document ).ajaxComplete(function( event, xhr, settings ) {
-				var data = _this.decodeUriParams( settings.data );
-				if ( data && data.action && data.action == 'save-widget' && data.id_base == 'text' ) {
-					_this.reloadEditors();
-				}
-			});
+                if ( id_base == 'text' ) {
+                    var editor_id = $widget.find( 'textarea.wp-editor-area' ).attr('id');
 
-			// initial reload of the editors so we can bind events
-			_this.firstLoadEditors();
-		},
-
-		/**
-		 * Loop through editors, remove them, modify the originals with events,
-		 * and re-instantiate them.
-		 * 
-		 * @link http://www.tinymce.com/wiki.php/api4:event.tinymce.Editor.blur
-		 */
-		firstLoadEditors: function(){
-            var _this = this;
-            this.hideDefaultTextarea();
-
-			setTimeout( function(){
-                $( '.sweet-widgets-text-editor' ).each( function() {
-                    tinyMCEPreInit.mceInit[this.id].setup = function ( ed ) {
-                        // subscribe to the blur event for saving the document
-                        ed.on( 'blur', function ( e ) {
-                            console.log('blur');
-                            if ( ! ed.isHidden() ) {
-                                console.log('blur save');
-                                ed.save();
-                            }
-                        } );
-                    };
-                });
-
-			}, 1 );
-		},
-
-		/**
-		 * Loop through editors, save content, then reload them.
-		 */
-		reloadEditors: function() {
-            this.hideDefaultTextarea();
-
-            console.log('reload');
-
-			$( '.sweet-widgets-text-editor' ).each( function() {
-				var editor = tinymce.get( this.id );
-
-				if ( ! editor.isHidden() ) {
-                    console.log('reload save');
-					editor.save();
-				}
-
-				tinymce.remove( editor );
-				tinymce.init( tinyMCEPreInit.mceInit[ this.id ] );
+                    _this.reloadEditor( editor_id );
+                }
 			});
 		},
 
         /**
-         * Hide the default textarea to avoid confusion.
+         * Save the contents of a tinymce editor
+         *
+         * @param editor_id
          */
-        hideDefaultTextarea: function(){
-            //$('.widget-name-Text p > textarea.widefat').hide();
+        saveEditor: function( editor_id ){
+            var editor = tinymce.get( editor_id );
+
+            if ( ! editor ) {
+                return;
+            }
+
+            if ( ! editor.isHidden() ) {
+                editor.save();
+            }
+        },
+
+        /**
+         * Remove and re-init a tinymce editor
+         *
+         * @param editor_id
+         */
+        reloadEditor: function( editor_id ){
+            var editor = tinymce.get( editor_id );
+
+            if ( ! editor ) {
+                return;
+            }
+
+            tinymce.remove( editor );
+            tinymce.init( tinyMCEPreInit.mceInit[ editor_id ] );
+
+            this.reloadQuicktags( editor_id, getUserSetting( 'editor' ) == 'html' );
+        },
+
+        /**
+         * Remove and re-create the quicktags bar for this editor
+         *
+         * @param editor_id
+         * @param editor_hidden
+         */
+        reloadQuicktags: function( editor_id, editor_hidden ){
+            var $wrapper = $( '#wp-' + editor_id + '-wrap' );
+
+            $wrapper.find( '.quicktags-toolbar' ).remove();
+            $wrapper.unbind( 'onmousedown' ).bind( 'onmousedown', function(){
+                window.wpActiveEditor = editor_id;
+            });
+
+            if ( editor_hidden ) {
+                window.wpActiveEditor = editor_id;
+            }
+
+            //Add settings with current widget id into QTags
+            QTags({id: editor_id});
+
+            //Re-init the QTags
+            QTags._buttonsInit();
+
+            // if the user was on the html editor, return to it
+            if ( editor_hidden ){
+                $wrapper.find('.wp-switch-editor.switch-html' ).trigger('click');
+            }
+        },
+
+        /**
+         * Util: Construct an editor id the same way as it is constructed in PHP
+         *
+         * @param widget
+         * @returns {string}
+         */
+        makeEditorId: function( widget ){
+            return "widget_" + widget.id_base + "_" + widget.widget_number + "_sweet_widget_text_editor";
         },
 
 		/**
@@ -101,6 +138,7 @@
 			});
 			return obj;
 		}
+
 	};
 	
 	$(document).ready(function() {
