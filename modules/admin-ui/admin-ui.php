@@ -3,6 +3,8 @@
  * Class Sweet_Widgets_Admin_UI
  * @link https://github.com/daggerhart/sweet-widgets
  */
+if ( !defined('ABSPATH') ) die();
+
 if ( ! class_exists('Sweet_Widgets_Templates') ) :
 class Sweet_Widgets_Admin_UI {
 

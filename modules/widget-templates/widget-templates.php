@@ -8,6 +8,8 @@
  *      - sweet_widgets_templates-replacements
  *      - sweet_widgets_templates-suggestions
  */
+if ( !defined('ABSPATH') ) die();
+
 if ( ! class_exists('Sweet_Widgets_Templates') ) :
 class Sweet_Widgets_Templates {
 
