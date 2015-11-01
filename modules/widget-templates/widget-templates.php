@@ -1,12 +1,14 @@
 <?php
 /**
  * Class Sweet_Widgets_Templates
+ * @link https://github.com/daggerhart/sweet-widgets
  *
  * Filters:
  *      - sweet_widgets_templates-folder
  *      - sweet_widgets_templates-replacements
  *      - sweet_widgets_templates-suggestions
  */
+if ( ! class_exists('Sweet_Widgets_Templates') ) :
 class Sweet_Widgets_Templates {
 
 	public $version = '0.0.1';
@@ -284,3 +286,4 @@ class Sweet_Widgets_Templates {
 }
 
 Sweet_Widgets_Templates::register();
+endif; // class exists
