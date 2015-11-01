@@ -7,5 +7,4 @@ Modules | Description
 ---|---
 [Sweet Widget Templates](modules/widget-templates) | Provides a template hierarchy for WordPress widgets, and Widget field for specifying the template.
 [Sweet Widget Admin UI](modules/admin-ui) | General improvements to the Admin Dashboard widget management interface.
-[Sweet Widget Text Editor](modules/text-editor) | Provides the TinyMCE WYSIWYG Editor for the core Text widgets.
 
