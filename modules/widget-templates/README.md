@@ -63,7 +63,7 @@ Example widget template.
  */
 ?>
 <aside id="<?php echo esc_attr( $widget_id ); ?>" class="widget <?php echo esc_attr( $widget_classname ); ?>">
-	<?php if ( $widget_title ) :?>here
+	<?php if ( $widget_title ) :?>
 		<h2 class="widget-title"><?php echo $widget_title; ?></h2>
 	<?php endif; ?>
 	<?php if ( $widget_content ) : ?>
