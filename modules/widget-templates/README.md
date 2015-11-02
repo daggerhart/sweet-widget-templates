@@ -35,6 +35,7 @@ Type | Name | Description
 filter | `sweet_widgets_templates-folder` | Change the folder where Widget templates are stored in the theme. Defaults to `widgets`. Signature: `( $folder )`
 filter | `sweet_widgets_templates-replacements` | Template suggestion replacement pairs. Signature: `( $replacements, $instance, $widget, $args )`
 filter | `sweet_widgets_templates-suggestions` | Provide or remove template suggestions. Signature: `( $suggestions, $instance, $widget, $args )`
+filter | `sweet_widgets_templates-get_widget_data` | Modify data injected into the widget scope. All keys are automatically prefixed with `widget_` within the template. Signature: `( $data, $instance, $widget, $args )`
 
 ## Widget Template Template
 
