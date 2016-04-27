@@ -37,7 +37,7 @@ filter | `sweet_widgets_templates-replacements` | Template suggestion replacemen
 filter | `sweet_widgets_templates-suggestions` | Provide or remove template suggestions. Signature: `( $suggestions, $instance, $widget, $args )`
 filter | `sweet_widgets_templates-get_widget_data` | Modify data injected into the widget scope. All keys are automatically prefixed with `widget_` within the template. Signature: `( $data, $instance, $widget, $args )`
 
-## Widget Template Template
+## Widget Template Example
 
 Example widget template.
 
