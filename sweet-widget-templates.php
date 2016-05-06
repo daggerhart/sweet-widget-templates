@@ -8,13 +8,13 @@ Description:       Provide the theme with widget templates.
 Contributors:      daggerhart
 Author:            Jonathan Daggerhart
 Author URI:        http://www.daggerhart.com
-Version:           0.0.2
+Version:           0.1.2
 */
 
 
 /**
  * Class Sweet_Widgets_Templates
- * @link https://github.com/daggerhart/sweet-widgets
+ * @link https://github.com/daggerhart/sweet-widget-templates
  *
  * Filters:
  *      - sweet_widgets_templates-folder
