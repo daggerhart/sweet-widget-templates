@@ -27,7 +27,7 @@ if ( ! class_exists('Sweet_Widgets_Templates') ) :
 
 	class Sweet_Widgets_Templates {
 
-		public $version = '0.0.2';
+		public $version = '0.1.2';
 
 		// subdirectory in theme where widget templates are kept
 		public $folder = 'widgets';
@@ -126,20 +126,23 @@ if ( ! class_exists('Sweet_Widgets_Templates') ) :
 			// look for suggested templates, and handle the first one found
 			$template = locate_template( $suggestions );
 
-			if ( $template ){
-				// We have a custom template, now we need to setup some data for
-				// the template to use, then load it.
-				$this->setup_widget_template_data( $instance, $widget, $args );
-
-				// execute the widget
-				load_template( $template, false );
-
-				// set instance to false to short circuit the normal process
-				$instance = false;
-
-				// clean up any previous widget data stored in the query_vars
-				$this->reset_query_vars();
+			// if no template is found in the theme, use the default one
+			// provided by the plugin
+			if ( !$template ) {
+				$template = __DIR__ . '/templates/widget--default.php';
 			}
+
+			// Setup some data to be extract()ed into the template scope
+			$this->setup_widget_template_data( $instance, $widget, $args );
+
+			// execute the widget
+			load_template( $template, false );
+
+			// set instance to false to short circuit the normal process
+			$instance = false;
+
+			// clean up any previous widget data stored in the query_vars
+			$this->reset_query_vars();
 
 			return $instance;
 		}
